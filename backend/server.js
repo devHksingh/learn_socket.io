@@ -5,7 +5,11 @@ import { Server } from "socket.io";
 const app = express();
 const server = createServer(app);
 
-const io = new Server(server);
+const io = new Server(server,{
+  cors:{
+    origin:"*"
+  }
+});
 
 io.on("connection", (socket) => {
   console.log("a user is connected",socket);
