@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.env
+.vscode/
+.DS_Store
+npm-debug.log
+yarn-error.log
+logs/
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+coverage/
+*.lcov
+.cache/
+.next/
