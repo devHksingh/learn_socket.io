@@ -35,3 +35,12 @@ socket.emit("event", data)
 ```
 
 **Sends a message only to that one client**
+
+
+| Action              | Who does it?                  | Function        |
+| ------------------- | ----------------------------- | --------------- |
+| **Send data**       | Client or Server              | `socket.emit()` |
+| **Receive data**    | Client or Server              | `socket.on()`   |
+| **Client → Server** | Client emits → Server listens | `emit` → `on`   |
+| **Server → Client** | Server emits → Client listens | `emit` → `on`   |
+
