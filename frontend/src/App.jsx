@@ -28,7 +28,7 @@ const App = () => {
 
     socket.on("sendMessage", (msg) => {
       console.log("setChatMessages", msg);
-      setChatMessages(msg);
+      setChatMessages((prev)=>[...prev,msg]);
     });
 
     //listen for disconnection
