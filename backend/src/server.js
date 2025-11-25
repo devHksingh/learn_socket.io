@@ -15,7 +15,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173/", //React app
+    origin: "http://localhost:5173", //React app
     methods: ["GET", "POST"],
   },
 });
@@ -30,6 +30,19 @@ app.get("/", (req, res) => {
 // Socket.io connection
 io.on("connection",(socket)=>{
   console.log(`User connected : ${socket.id}`);
+
+  // socket.emit() => Send message to the person who triggered an event
+
+  socket.on("joinRoom",(userName)=>{
+    // only the connected user receives this
+    socket.emit("welcome",`hi ${userName} welcome to server`)
+  })
+
+  socket.on("sendMessage",({userName,msg})=>{
+    console.log("Recvied message: ",userName,msg);
+    // send message to all clients (including sender)
+    io.emit("sendMessage",[`${userName}: ${msg}`])
+  })
   
   socket.on('disconnect',()=>{
     console.log(`User disconnected : ${socket.id}`);

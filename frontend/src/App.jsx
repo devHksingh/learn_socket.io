@@ -1,45 +1,98 @@
-import React from "react";
-import { useRef } from "react";
 import { useEffect } from "react";
-import { connectWS } from "./ws";
+import { useState } from "react";
+import socket from "./ws";
+import { use } from "react";
 
 const App = () => {
-  const  socket = useRef(null)
-  const [userName,setUserName] = React.useState("")
+  const [isConnected, setIsConnected] = useState(false);
+  const [message, setMessages] = useState("");
+  const [chatMessage, setChatMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [userName, setUserName] = useState("");
+  const [welcomeMsg, setWelcomeMsg] = useState("");
 
-  useEffect(()=>{
-    socket.current = connectWS()
+  useEffect(() => {
+    // connect to server
+    socket.connect();
+    // listen for connection
+    socket.on("connect", () => {
+      setIsConnected(true);
+      console.log("Connected:", socket.id);
+    });
+    // listen for welcome message from server
 
-    socket.current.on('connect',()=>{
-      console.log("connection stablished",socket.current.id);
-      socket.current.emit("welcome")
-    })
-    socket.current.on('disconnect',()=>{
-      console.log("disconnected from server");
-    })
+    socket.on("welcome", (msg) => {
+      console.log("Server welcome message", msg);
+      setWelcomeMsg(msg);
+    });
 
-  },[])
+    socket.on("sendMessage", (msg) => {
+      console.log("setChatMessages", msg);
+      setChatMessages(msg);
+    });
 
-  const handleSetUserName=()=>{
-    const name = document.querySelector("input").value
-    setUserName(name)
-    socket.current.emit("joinRoom",name)
-  }
+    //listen for disconnection
+    socket.on("disconnect", () => {
+      setIsConnected(false);
+      console.log("disconnect:", socket.id);
 
-  return <div>
-    <h1>Dummy WebSocket Client</h1>
+      //  Cleanup on unmount
+      return () => {
+        socket.off("disconnect");
+        socket.off("connect");
+        socket.off("joinRoom");
+        socket.disconnect();
+      };
+    });
+  }, []);
+
+  const handleSubmit = (e) => {
+    console.log(e);
+    e.preventDefault();
+    console.log("userName", userName);
+    socket.emit("joinRoom", userName);
+  };
+  const handleSendMsg = (e) => {
+    e.preventDefault();
+    socket.emit("sendMessage", { userName: userName, msg: message });
+  };
+
+  return (
     <div>
-      {userName?
+      <h1>enter user name</h1>
+
       <>
-      <h2>{userName}</h2>
-      </>:
-      <>
-      <h2>Enter userName to start chat</h2>
-      <input type="text"  placeholder="Enter your name" />
-      <button onClick={handleSetUserName}>Start Chat</button>
-      </>}
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            placeholder="enter your name"
+            onChange={(e) => setUserName(e.target.value)}
+          />
+          <button type="submit">Submit</button>
+        </form>
+      </>
+
+      {welcomeMsg}
+
+      <form onSubmit={handleSendMsg}>
+        <input
+          type="text"
+          placeholder="Enter your message"
+          onChange={(e) => setMessages(e.target.value)}
+        />
+        <button type="submit">Send</button>
+      </form>
+      <div>
+        <h2>users message</h2>
+        {chatMessage &&
+          chatMessage.map((msg, index) => (
+            <>
+              <div key={index}>{msg}</div>
+            </>
+          ))}
+      </div>
     </div>
-  </div>;
+  );
 };
 
 export default App;
