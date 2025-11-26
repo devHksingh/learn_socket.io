@@ -28,8 +28,15 @@ const App = () => {
 
     socket.on("sendMessage", (msg) => {
       console.log("setChatMessages", msg);
-      setChatMessages((prev)=>[...prev,msg]);
+      setChatMessages((prev)=>[...prev,...msg]);
     });
+
+    socket.emit("getOnlineUser")
+
+    socket.on("getOnlineUser",(user)=>{
+      console.log("All online users",user);
+      
+    })
 
     //listen for disconnection
     socket.on("disconnect", () => {

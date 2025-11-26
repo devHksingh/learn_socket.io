@@ -27,31 +27,41 @@ app.get("/", (req, res) => {
   });
 });
 
+const onlineUsers = new Set();
+
 // Socket.io connection
-io.on("connection",(socket)=>{
+io.on("connection", (socket) => {
   console.log(`User connected : ${socket.id}`);
 
   // socket.emit() => Send message to the person who triggered an event
 
-  socket.on("joinRoom",(userName)=>{
+  socket.on("joinRoom", (userName) => {
     // only the connected user receives this
-    socket.emit("welcome",`hi ${userName} welcome to server`)
-  })
+    socket.emit("welcome", `hi ${userName} welcome to server`);
+    onlineUsers.add(userName);
+    // console.log("Online users: ",Array.from(onlineUsers));
+    console.log("online user set : ", onlineUsers);
+    console.log("array of online users :", Array.from(onlineUsers));
+  });
 
-  socket.on("sendMessage",({userName,msg})=>{
-    console.log("Recvied message: ",userName,msg);
+  socket.on("sendMessage", ({ userName, msg }) => {
+    console.log("Recvied message: ", userName, msg);
     // send message to all clients (including sender)
-    io.emit("sendMessage",[`${userName}: ${msg}`])
-  })
-  
-  socket.on('disconnect',()=>{
+    io.emit("sendMessage", [`${userName}: ${msg}`]);
+  });
+
+  socket.on("getOnlineUser", () => {
+    const onlineUser = Array.from(onlineUsers);
+    io.emit("getOnlineUser",onlineUser)
+  });
+
+  socket.on("disconnect", () => {
     console.log(`User disconnected : ${socket.id}`);
-    
-  })
-})
+  });
+});
 
 const PORT = 4000;
 
-server.listen(PORT,()=>{
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-})
+});
